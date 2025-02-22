@@ -27,6 +27,8 @@ PUT VIDEO HERE
 - **Sum Calculation**: Calculates the sum of the Fibonacci sequence up to a specified number.
 - **Reverse Sequence Generation**: Generates the Fibonacci sequence in reverse order.
 - **Process Creation and Messaging**: Demonstrates process creation and message passing in Erlang.
+- **Input Validation**: Ensures that the input is a non-negative integer.
+- **Error Handling**: Handles invalid input and unknown errors gracefully.
 
 # Usage
 
@@ -44,6 +46,6 @@ PUT VIDEO HERE
 
 # Future Work
 
-* Implement error handling and input validation
+* Implement additional error handling and input validation
 * Enhance the user interface for better interaction
 * Optimize the Fibonacci sequence algorithm for larger numbers

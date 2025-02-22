@@ -10,17 +10,18 @@ validate_input(_) ->
 
 % Recursive function to calculate the nth Fibonacci number
 % Uses an accumulator to optimize recursion
-fib(N) when validate_input(N) ->
-    fib_acc(N, 0, 1);
-fib(_) ->
-    handle_error(invalid_input).
+fib(N) ->
+    case validate_input(N) of
+        true -> fib_acc(N, 0, 1);
+        false -> handle_error(invalid_input)
+    end.
 
 % Helper function using tail recursion for efficiency
 % A and B are accumulators to store intermediate results
 fib_acc(0, A, _) -> A;
 fib_acc(N, A, B) when N > 0 -> fib_acc(N - 1, B, A + B).
 
-% Function to handle errors gracefully
+% Function to handle errors
 handle_error(invalid_input) ->
     io:format("Error: Invalid input. Please enter a non-negative integer.~n"),
     error(invalid_input);
@@ -30,42 +31,57 @@ handle_error(_) ->
 
 % Function to print the Fibonacci sequence up to the nth number
 % Validates input before generating the sequence
-print_fib_sequence(N) when validate_input(N) ->
-    Seq = lists:map(fun fib/1, lists:seq(0, N)),
-    io:format("Fibonacci sequence up to ~p: ~p~n", [N, Seq]);
-print_fib_sequence(_) ->
-    handle_error(invalid_input).
+print_fib_sequence(N) ->
+    case validate_input(N) of
+        true ->
+            Seq = lists:map(fun fib/1, lists:seq(0, N)),
+            io:format("Fibonacci sequence up to ~p: ~p~n", [N, Seq]);
+        false ->
+            handle_error(invalid_input)
+    end.
 
 % Function to calculate the sum of the Fibonacci sequence up to the nth number
-sum_fib_sequence(N) when validate_input(N) ->
-    Sum = lists:sum(lists:map(fun fib/1, lists:seq(0, N))),
-    Sum;
-sum_fib_sequence(_) ->
-    handle_error(invalid_input).
+sum_fib_sequence(N) ->
+    case validate_input(N) of
+        true ->
+            Sum = lists:sum(lists:map(fun fib/1, lists:seq(0, N))),
+            Sum;
+        false ->
+            handle_error(invalid_input)
+    end.
 
 % Function to print the sum of the Fibonacci sequence up to the nth number
-print_sum_fib_sequence(N) when validate_input(N) ->
-    Sum = sum_fib_sequence(N),
-    io:format("Sum of Fibonacci sequence up to ~p: ~p~n", [N, Sum]);
-print_sum_fib_sequence(_) ->
-    handle_error(invalid_input).
+print_sum_fib_sequence(N) ->
+    case validate_input(N) of
+        true ->
+            Sum = sum_fib_sequence(N),
+            io:format("Sum of Fibonacci sequence up to ~p: ~p~n", [N, Sum]);
+        false ->
+            handle_error(invalid_input)
+    end.
 
 % Function to reverse the Fibonacci sequence up to the nth number
-reverse_fib_sequence(N) when validate_input(N) ->
-    Seq = lists:reverse(lists:map(fun fib/1, lists:seq(0, N))),
-    Seq;
-reverse_fib_sequence(_) ->
-    handle_error(invalid_input).
+reverse_fib_sequence(N) ->
+    case validate_input(N) of
+        true ->
+            Seq = lists:reverse(lists:map(fun fib/1, lists:seq(0, N))),
+            Seq;
+        false ->
+            handle_error(invalid_input)
+    end.
 
 % Function to print the reversed Fibonacci sequence up to the nth number
-print_reverse_fib_sequence(N) when validate_input(N) ->
-    Seq = reverse_fib_sequence(N),
-    io:format("Reversed Fibonacci sequence up to ~p: ~p~n", [N, Seq]);
-print_reverse_fib_sequence(_) ->
-    handle_error(invalid_input).
+print_reverse_fib_sequence(N) ->
+    case validate_input(N) of
+        true ->
+            Seq = reverse_fib_sequence(N),
+            io:format("Reversed Fibonacci sequence up to ~p: ~p~n", [N, Seq]);
+        false ->
+            handle_error(invalid_input)
+    end.
 
 % Start function to create a process and register it if not already registered
-% Checks if the process is already registered and reuses it if possible
+% Checks if the process is already registered and reuses it if available
 start() ->
     case whereis(fib_proc) of
         undefined ->
@@ -77,7 +93,7 @@ start() ->
     end.
 
 % Stop function to terminate the registered process
-% Makes sure the process is registered before attempting to stop it
+% Ensures the process is registered before attempting to stop it
 stop() ->
     Pid = whereis(fib_proc),
     if
@@ -89,21 +105,36 @@ stop() ->
 % Waits for messages to calculate Fibonacci numbers or stop the process
 loop() ->
     receive
-        {calculate, N} when validate_input(N) ->
-            Result = fib(N),
-            io:format("Fibonacci number ~p: ~p~n", [N, Result]),
-            loop();
-        {calculate, _} ->
-            handle_error(invalid_input),
-            loop();
-        {calculate_sum, N} when validate_input(N) ->
-            Sum = sum_fib_sequence(N),
-            io:format("Sum of Fibonacci sequence up to ~p: ~p~n", [N, Sum]),
-            loop();
-        {calculate_reverse, N} when validate_input(N) ->
-            Seq = reverse_fib_sequence(N),
-            io:format("Reversed Fibonacci sequence up to ~p: ~p~n", [N, Seq]),
-            loop();
+        {calculate, N} ->
+            case validate_input(N) of
+                true ->
+                    Result = fib(N),
+                    io:format("Fibonacci number ~p: ~p~n", [N, Result]),
+                    loop();
+                false ->
+                    handle_error(invalid_input),
+                    loop()
+            end;
+        {calculate_sum, N} ->
+            case validate_input(N) of
+                true ->
+                    Sum = sum_fib_sequence(N),
+                    io:format("Sum of Fibonacci sequence up to ~p: ~p~n", [N, Sum]),
+                    loop();
+                false ->
+                    handle_error(invalid_input),
+                    loop()
+            end;
+        {calculate_reverse, N} ->
+            case validate_input(N) of
+                true ->
+                    Seq = reverse_fib_sequence(N),
+                    io:format("Reversed Fibonacci sequence up to ~p: ~p~n", [N, Seq]),
+                    loop();
+                false ->
+                    handle_error(invalid_input),
+                    loop()
+            end;
         stop ->
             io:format("Stopping process~n"),
             ok
