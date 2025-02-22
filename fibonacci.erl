@@ -1,19 +1,71 @@
 -module(fibonacci).
--export([fib/1, print_fib_sequence/1, start/0, stop/0, fib_acc/3]).
+-export([fib/1, print_fib_sequence/1, start/0, stop/0, fib_acc/3, validate_input/1, handle_error/1, sum_fib_sequence/1, print_sum_fib_sequence/1, reverse_fib_sequence/1, print_reverse_fib_sequence/1]).
+
+% Function to validate input
+% Makes sure the input is a non-negative integer
+validate_input(N) when is_integer(N), N >= 0 ->
+    true;
+validate_input(_) ->
+    false.
 
 % Recursive function to calculate the nth Fibonacci number
-fib(N) when N >= 0 -> fib_acc(N, 0, 1).
+% Uses an accumulator to optimize recursion
+fib(N) when validate_input(N) ->
+    fib_acc(N, 0, 1);
+fib(_) ->
+    handle_error(invalid_input).
 
 % Helper function using tail recursion for efficiency
+% A and B are accumulators to store intermediate results
 fib_acc(0, A, _) -> A;
 fib_acc(N, A, B) when N > 0 -> fib_acc(N - 1, B, A + B).
 
+% Function to handle errors gracefully
+handle_error(invalid_input) ->
+    io:format("Error: Invalid input. Please enter a non-negative integer.~n"),
+    error(invalid_input);
+handle_error(_) ->
+    io:format("Error: Unknown error occurred.~n"),
+    error(unknown_error).
+
 % Function to print the Fibonacci sequence up to the nth number
-print_fib_sequence(N) when N >= 0 ->
+% Validates input before generating the sequence
+print_fib_sequence(N) when validate_input(N) ->
     Seq = lists:map(fun fib/1, lists:seq(0, N)),
-    io:format("Fibonacci sequence up to ~p: ~p~n", [N, Seq]).
+    io:format("Fibonacci sequence up to ~p: ~p~n", [N, Seq]);
+print_fib_sequence(_) ->
+    handle_error(invalid_input).
+
+% Function to calculate the sum of the Fibonacci sequence up to the nth number
+sum_fib_sequence(N) when validate_input(N) ->
+    Sum = lists:sum(lists:map(fun fib/1, lists:seq(0, N))),
+    Sum;
+sum_fib_sequence(_) ->
+    handle_error(invalid_input).
+
+% Function to print the sum of the Fibonacci sequence up to the nth number
+print_sum_fib_sequence(N) when validate_input(N) ->
+    Sum = sum_fib_sequence(N),
+    io:format("Sum of Fibonacci sequence up to ~p: ~p~n", [N, Sum]);
+print_sum_fib_sequence(_) ->
+    handle_error(invalid_input).
+
+% Function to reverse the Fibonacci sequence up to the nth number
+reverse_fib_sequence(N) when validate_input(N) ->
+    Seq = lists:reverse(lists:map(fun fib/1, lists:seq(0, N))),
+    Seq;
+reverse_fib_sequence(_) ->
+    handle_error(invalid_input).
+
+% Function to print the reversed Fibonacci sequence up to the nth number
+print_reverse_fib_sequence(N) when validate_input(N) ->
+    Seq = reverse_fib_sequence(N),
+    io:format("Reversed Fibonacci sequence up to ~p: ~p~n", [N, Seq]);
+print_reverse_fib_sequence(_) ->
+    handle_error(invalid_input).
 
 % Start function to create a process and register it if not already registered
+% Checks if the process is already registered and reuses it if possible
 start() ->
     case whereis(fib_proc) of
         undefined ->
@@ -25,6 +77,7 @@ start() ->
     end.
 
 % Stop function to terminate the registered process
+% Makes sure the process is registered before attempting to stop it
 stop() ->
     Pid = whereis(fib_proc),
     if
@@ -33,11 +86,23 @@ stop() ->
     end.
 
 % Loop function to handle messages
+% Waits for messages to calculate Fibonacci numbers or stop the process
 loop() ->
     receive
-        {calculate, N} when is_integer(N) ->
+        {calculate, N} when validate_input(N) ->
             Result = fib(N),
             io:format("Fibonacci number ~p: ~p~n", [N, Result]),
+            loop();
+        {calculate, _} ->
+            handle_error(invalid_input),
+            loop();
+        {calculate_sum, N} when validate_input(N) ->
+            Sum = sum_fib_sequence(N),
+            io:format("Sum of Fibonacci sequence up to ~p: ~p~n", [N, Sum]),
+            loop();
+        {calculate_reverse, N} when validate_input(N) ->
+            Seq = reverse_fib_sequence(N),
+            io:format("Reversed Fibonacci sequence up to ~p: ~p~n", [N, Seq]),
             loop();
         stop ->
             io:format("Stopping process~n"),
