@@ -4,7 +4,7 @@ My name is Maxim Person and as a software engineer I aim to deepen my understand
 
 The purpose of this software is to calculate and display the Fibonacci sequence up to a specified number, showcasing the functional programming principles in Erlang. This generator can handle sequences up to the 100th Fibonacci number. Additionally, it can calculate the sum of the sequence and generate the sequence in reverse order.
 
-PUT VIDEO HERE
+Video Demonstration: (https://youtu.be/O-3HDjgOStE)
 
 # Development Environment
 
